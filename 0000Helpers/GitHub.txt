@@ -1,0 +1,126 @@
+##### Create and set
+    >Configure your global identity
+        git config --global user.name "Your Name"
+        git config --global user.email "your_email@example.com"
+
+    > Check global identity
+        git config --list
+        git config user.name
+        git config user.email
+
+    >Create new repository
+        # Initialize the folder as a Git repository
+        git init
+
+        # Stage all your files
+        git add .
+
+        # Commit the files locally
+        git commit -m "Initial commit"
+
+        # Rename the default branch to 'main'
+        git branch -M main
+
+        # Link your local project to GitHub (Replace URL with your copied link)
+        git remote add origin https://github.com
+
+        # Upload your files to GitHub (use your PAT token if prompted for a password)
+        git push -u origin main
+
+##### Cambio repositorio direccion
+    >Apuntar al nuevo repositorio
+        git remote set-url origin https://github.com/IbtFerGomez/AdminProProyectoPrueba.git
+
+    >Verificar la conexión
+        git remote -v
+
+    >Preparar los archivos locales
+        git add .
+        git commit -m "Reubicación del proyecto a entorno local y limpieza de directorios"
+    
+    >Subir todo a la rama principal
+        git push -u origin master [master. name for the branch]
+    
+    >Crear una nueva rama de trabajo
+        git checkout -b desarrollo
+    
+##### Branches
+    ###Pasos para fusionar main 
+    >Cambia a la rama receptora
+        git checkout main
+    >Fetch all remote branches
+        git fetch origin
+    >Merge master into your local main
+        git merge origin/master
+    >Push the consolidated main to GitHub
+        git push origin main
+    
+        Once you have successfully pushed main and it contains all your work, you can clean up the confusion by making main the default branch on GitHub and deleting master.
+        Go to your repository on GitHub.com.
+        Go to Settings > General (or Branches depending on the UI layout).
+        Look for the Default branch section. Click the two arrows icon (Switch to another branch) and change it from master to main.
+        Once main is the default, go back to your repository's code tab, click on the branches list (where image_0dc102.png is from), and you will now be able to safely delete the master branch using the trash can icon.
+
+    ####Create and work new branch
+        >Configuración Inicial de Ramas
+            git checkout main
+        >Crear nueva rama $ |El modificador -b le indica Git que cree una rama nueva idéntica a tu ubicación actual y te mueva a ella.|
+            git checkout -b development
+        >Subir y respaldar
+            git push -u origin development
+        >Regresar a main $|Regresas al inicio para que tu siguiente rama nazca del mismo origen limpio, sin heredar pruebas a medias.|
+            git checkout main
+        >Crea rama 2 "pruebas"
+            git checkout -b testing
+        >Conectar nueva rama a repositorio
+            git push -u origin testing
+
+    ####Trabajo Ramas
+        >Entra rama desarrollo  
+            git checkout development
+        -realizas tus modificaciones vscode-
+        >Preparar archivos 
+            git add .
+        >Empaquetas los cambios con un mensaje claro
+            git commit -m "mensaje"
+        >Respaldas tu progreso en GitHub
+            git push origin development
+            
+        -----Entrar a testing-----
+            -----Cuando consideras que una característica está terminada, la envías a tu 
+            entorno de revisión. En este punto dejas de programar y te dedicas a usar 
+            la app como un usuario normal.------
+
+        >Te cambias al carril de pruebas
+            git checkout testing
+        >Actualizas tu local por si hubo cambios previos en la nube
+            git pull origin testing
+        >Absorbes todo el código nuevo que acabas de hacer
+            git merge development
+        >Subes la versión de prueba actualizada a GitHub
+            git push origin testing
+        
+        -----Corrección de errores-----
+            ------ Si al navegar tu app en testing encuentras un botón que no 
+            funciona o un texto mal alineado, no editas el código en testing. 
+            Vuelves a tu taller.-----
+       
+        >Regresas a tu zona de trabajo
+            git add . 
+            git commit -m "Corrección de error X"
+            git push origin development
+
+            ----Vuelves a repetir testing----
+                >-----Entrar a testing-----
+        
+        -----Lanzamiento final (main)------
+            -----Solo cuando la rama testing funciona a la perfección y estás listo 
+            para entregar la versión final de tu sistema.------
+        >Te mueves a tu código maestro
+            git checkout main (Te mueves a tu código maestro)
+        >Aseguras que esté sincronizado
+            git pull origin main
+        >Inyectas la versión que ya superó todas las pruebas
+            git merge testing
+        >¡Proyecto actualizado y estable en la nube!
+            git push origin main

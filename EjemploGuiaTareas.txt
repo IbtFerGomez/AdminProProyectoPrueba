@@ -1,0 +1,145 @@
+Bitácora AdminPro
+Guía de aprendizaje paso a paso: cómo está armado el sistema y cómo lo vamos a levantar, probar y entender, una pieza a la vez.
+
+Actualizado 26 ago 2026
+Carpeta: AdminProSystem/
+Progreso: Paso 1 de 3
+Arquitectura del proyecto
+Todo vive dentro de una sola carpeta, AdminProSystem/, con tres piezas que cumplen roles distintos. Solo una de ellas — backend/ — es "el sistema" de verdad: la que guarda datos, aplica reglas de negocio y decide quién puede hacer qué. Las otras dos son interfaces para hablar con ella.
+
+AdminProSystem/
+├── backend/          # Spring Boot + PostgreSQL — la lógica real
+├── frontend-app/      # SPA React — interfaz clickeable, hoy con datos de ejemplo
+├── frontend/           # 36 pantallas Stitch en HTML — solo referencia visual
+├── docker-compose.yml   # levanta backend + base de datos juntos
+└── README.md
+Las capas del backend
+Dentro de backend/src/main/java/com/recuperat/adminpro/, cada clase Java cae en una de cuatro capas. Es la separación clásica de Spring Boot, y vale la pena entenderla bien porque se repite en cada módulo (pacientes, finanzas, seguridad, etc.):
+
+Entidad @Entity
+Una clase que representa una tabla de la base de datos. Ej. Paciente.java = tabla paciente. Hibernate la usa para traducir objetos Java ↔ filas SQL.
+Repositorio
+Una interfaz que hereda de JpaRepository. No se implementa a mano — Spring Data genera el código real por debajo (el SELECT/INSERT/UPDATE queda oculto).
+Servicio @Service
+Donde vive la regla de negocio: "no se puede cobrar dos veces la misma sesión", "el superadmin siempre existe". Llama al repositorio, nunca al revés.
+Controlador @RestController
+La puerta de entrada HTTP. Traduce una petición POST /api/v1/pacientes en una llamada al servicio, y el resultado del servicio en una respuesta JSON.
+El flujo siempre va en una sola dirección: petición HTTP → Controlador → Servicio → Repositorio → base de datos, y la respuesta regresa por el mismo camino. Ningún controlador debería tocar un repositorio directamente, ni un servicio debería saber nada de HTTP.
+
+Módulos de negocio
+backend/src/main/java/com/recuperat/adminpro/
+
+security/     # login, JWT propio, 2FA (TOTP) propio — sin librerías externas de auth
+config/       # cableado de Spring Security y de la documentación Swagger
+common/       # manejo de errores centralizado (ApiError, GlobalExceptionHandler)
+nucleo/       # Usuario, Rol, Sucursal — quién existe y qué puede hacer
+pacientes/    # Paciente, Paquete, Sesión, Agenda, Catálogo de servicios
+finanzas/     # Pago, CorteCaja, Solicitudes de autorización
+auditoria/    # bitácora de quién hizo qué y cuándo
+Dos decisiones de arquitectura importan especialmente para lo que sigue:
+
+Multi-sucursal en una sola base de datos: en vez de una base de datos por clínica, casi todas las tablas tienen una columna sucursal_id. Cada consulta filtra por sucursal — es más simple de operar con 2 sucursales, y migrable a "una base por sucursal" si algún día se vende como franquicia.
+JWT y 2FA hechos a mano: JwtService.java y TotpService.java no usan ninguna librería externa de tokens — firman y verifican con HMAC-SHA256 y generan códigos TOTP (los mismos que Google Authenticator) siguiendo el estándar RFC 6238, escrito directamente en Java. Es más código que instalar una librería, pero cero dependencias de terceros para algo tan sensible como la autenticación.
+Sobre frontend-app/ y frontend/: ninguna de las dos habla todavía con el backend. frontend/ son 36 archivos HTML estáticos (ni un fetch). frontend-app/ es una app React real, pero sus datos viven en un archivo mockData.ts en memoria — se ve funcional pero no toca la base de datos. Cablear una de las dos al backend es trabajo que viene más adelante, después de confirmar que el backend en sí funciona.
+Cómo vamos a avanzar
+Cada tarea llega con esta estructura fija: qué vas a hacer, para qué sirve, cómo se hace paso a paso, por qué existe eso dentro del proyecto, y qué conecta con qué (qué archivo dispara qué otro archivo). Cuando algo se debe probar, viene marcado como punto de prueba, con la herramienta exacta y el motivo. Vamos a empezar con tres pasos: levantar el backend, levantar el frontend-app, y un par de ajustes de seguridad pendientes. Confírmame cómo te fue con cada uno antes de que sigamos al siguiente.
+
+Los primeros tres pasos
+1
+Compilar y levantar el backend por primera vez
+Tarea
+Ejecutar docker compose up --build desde AdminProSystem/ para compilar el backend y levantarlo junto con una base de datos PostgreSQL real.
+
+Objetivo
+Este backend se escribió en un entorno sin acceso a internet a los repositorios de Java (Maven Central), así que nunca se compiló de punta a punta. El objetivo de este paso es, literalmente, la primera vez que el código pasa por un compilador real de Java con Spring en el classpath. Es la validación más importante de todo el proyecto hasta ahora.
+
+Descripción paso a paso
+Abre una terminal en tu máquina (no en esta sesión) dentro de AdminProSystem/.
+Copia el archivo de variables de entorno: cp .env.example .env
+Abre .env y cambia ADMINPRO_JWT_SECRET por cualquier cadena larga y aleatoria (es la llave con la que se firman los tokens de login).
+Ejecuta: docker compose up --build
+Observa la terminal. Vas a ver, en orden: Postgres arrancando, Flyway aplicando las migraciones V1 y V2, y finalmente Spring Boot arrancando su contexto.
+Busca la línea Started AdminProApplication in ... seconds — esa línea es la señal de que compiló y arrancó sin errores.
+Explicación — qué hace cada pieza y por qué
+docker-compose.yml define dos servicios: postgres (la base de datos, vacía al inicio) y backend (que se construye a partir de backend/Dockerfile). El Dockerfile tiene dos etapas: una compila el proyecto con Gradle dentro de un contenedor con JDK completo, y la otra copia solo el .jar ya compilado a una imagen liviana con únicamente el JRE — así la imagen final no carga todo el peso de las herramientas de compilación.
+
+Al arrancar, Spring Boot lee application.yml (perfil local) y usa esos datos para conectarse al servicio postgres del mismo docker-compose.yml. Antes de que la aplicación esté lista para recibir peticiones, Flyway corre automáticamente: aplica V1__init_schema.sql (crea las ~32 tablas) y luego V2__seed_roles_y_superadmin.sql (siembra los 7 roles predefinidos y la cuenta superadmin). Esto pasa una sola vez por base de datos — Flyway lleva registro de qué migraciones ya corrieron.
+
+Uniones y links
+ejecuta
+docker compose up → construye backend/Dockerfile → corre ./gradlew build dentro del contenedor
+lee
+Spring Boot lee application.yml → perfil local → credenciales del servicio postgres
+crea
+Flyway ejecuta db/migration/V1__init_schema.sql → crea tablas → luego V2__seed_roles_y_superadmin.sql → siembra roles + superadmin
+expone
+Una vez arriba, todos los @RestController de nucleo/, pacientes/, finanzas/, security/ quedan vivos en localhost:8080
+Punto de prueba
+Herramienta: tu navegador, en http://localhost:8080/swagger-ui.html
+
+Por qué esta herramienta: Swagger UI viene incluido (springdoc-openapi) y dibuja automáticamente todos los endpoints reales del backend a partir del código — no necesitas Postman ni escribir ninguna petición a mano todavía. Si la página carga y ves la lista de endpoints agrupados por controlador (auth, usuarios, pacientes, finanzas...), el backend compiló, arrancó, y se conectó a la base de datos correctamente. Si algo falla, la terminal donde corriste docker compose up va a mostrar el error real de Java — cópialo y lo revisamos juntos.
+
+2
+Levantar el frontend-app (React) con datos de ejemplo
+Tarea
+Instalar dependencias y arrancar frontend-app/ en modo desarrollo con npm install && npm run dev.
+
+Objetivo
+Confirmar que la app React (la que viene de Stitch → AI Studio → GitHub) corre de forma independiente en tu máquina, fuera de Google AI Studio. Esto no depende del backend — es una prueba aislada de que el proyecto Vite en sí está sano después de haberle quitado las piezas específicas de AI Studio.
+
+Descripción paso a paso
+En otra terminal (deja la del Paso 1 corriendo), entra a cd AdminProSystem/frontend-app.
+Ejecuta npm install — descarga React, Vite, Tailwind y el resto de dependencias listadas en package.json.
+Ejecuta npm run dev.
+La terminal te va a mostrar una URL local, típicamente http://localhost:3000.
+Ábrela en el navegador y navega entre pantallas usando el menú lateral.
+Explicación — qué hace cada pieza y por qué
+npm install lee package.json y descarga cada paquete a node_modules/ (no se sube a Git ni a Drive, por eso hay que correrlo tú). npm run dev ejecuta Vite, un servidor de desarrollo que compila el TypeScript/JSX al vuelo y recarga el navegador cada vez que cambias un archivo — no genera archivos finales en disco, solo sirve la app en memoria mientras la terminal está abierta.
+
+Al cargar, src/main.tsx monta el componente App.tsx, que a su vez trae todos los datos iniciales (pacientes, citas, roles, transacciones) desde src/data/mockData.ts — un archivo de texto plano con datos inventados, no una base de datos. Cada clic que hagas cambia ese estado solo en la memoria del navegador; si recargas la página, todo vuelve a los valores originales de mockData.ts.
+
+Uniones y links
+instala
+npm install → lee package.json → descarga a node_modules/ (local, no versionado)
+arranca
+npm run dev → Vite lee vite.config.ts → sirve index.html → carga src/main.tsx
+monta
+main.tsx → renderiza App.tsx → importa Sidebar, TopBar, y cada pantalla (PatientsScreen, AgendaScreen, etc.)
+sirve datos
+App.tsx → importa initialPatients, initialAppointments... desde src/data/mockData.ts (nada de red, nada de backend)
+Punto de prueba
+Herramienta: tu navegador, en http://localhost:3000
+
+Por qué esta herramienta: no hay nada que probar con Postman aquí — esta app no llama a ningún servidor todavía, así que la única prueba real es visual e interactiva: navega a "Pacientes", abre el detalle de uno, prueba el modal de "Nueva cita" o "Cobrar". Si todo responde sin errores en la consola del navegador, el frontend-app quedó sano y listo para conectarse al backend más adelante.
+
+3
+Housekeeping de seguridad: contraseña de arranque y CI/CD
+Tarea
+Dos ajustes pequeños pero importantes antes de seguir construyendo: mover ci-cd.yml.txt a su lugar real, y dejar planeado el cambio de la contraseña del superadmin de arranque.
+
+Objetivo
+Que el pipeline de GitHub Actions quede donde GitHub lo espera para poder activarse, y que quede explícito que la contraseña sembrada por la migración V2 es temporal — no es una contraseña para usar en producción ni siquiera en pruebas prolongadas.
+
+Descripción paso a paso
+Dentro de AdminProSystem/, mueve ci-cd.yml.txt a .github/workflows/ci-cd.yml (quitando la extensión .txt). Se entregó con ese nombre porque las herramientas con las que trabajo no pueden escribir directo dentro de .github/workflows/ — es una ruta protegida.
+Con el backend corriendo (Paso 1), entra a Swagger UI y prueba POST /auth/login con superadmin@recuperatfisioterapia.com / CambiarInmediatamente#2026.
+Como es la primera vez, el login no te da un token final — te va a devolver un challengeToken pidiendo enrolar el 2FA. Usa POST /auth/2fa/enroll con ese token como Bearer para obtener el secreto/QR, y POST /auth/2fa/verify con el código de 6 dígitos de tu app autenticadora (Google Authenticator, Authy, etc.) para completar el login.
+Anota en tu propia bitácora que este entregable no trae todavía un endpoint para que el superadmin cambie su propia contraseña — es la primera tarea de código real que conviene construir juntos, antes de considerar esto listo para nada más que pruebas locales.
+Explicación — qué hace cada pieza y por qué
+El flujo de login con 2FA obligatorio no es un capricho: la especificación exige TOTP para CEO, administradores de sucursal, contador y superadmin desde el día uno. Usuario.requiereDobleFactor() decide, según el rol, si el login corto (usuario+contraseña) es suficiente o si hace falta el segundo factor — el superadmin siempre lo requiere. Por eso el primer login nunca entrega un JWT completo de una vez: entrega un challengeToken de vida corta, útil solo para completar el enrolamiento o la verificación del código TOTP.
+
+Mover ci-cd.yml.txt importa porque GitHub Actions solo detecta workflows que viven exactamente en .github/workflows/*.yml dentro del repositorio — en cualquier otra ruta, el archivo existe pero GitHub lo ignora por completo.
+
+Uniones y links
+mueve
+AdminProSystem/ci-cd.yml.txt → AdminProSystem/.github/workflows/ci-cd.yml (sin tocar el contenido)
+llama
+POST /auth/login → AuthController → AuthService → Usuario.requiereDobleFactor() → decide si emite JWT completo o challengeToken
+verifica
+POST /auth/2fa/verify → TotpService → compara el código de 6 dígitos contra el secreto guardado en Usuario.dobleFactorSecreto
+Punto de prueba
+Herramienta: Swagger UI (/swagger-ui.html), botón "Try it out" en cada endpoint
+
+Por qué esta herramienta: es el primer flujo con varios pasos encadenados (login → enrolar → verificar), y Swagger te deja ejecutar cada petición, ver la respuesta JSON completa, y copiar el token de una petición a la siguiente sin escribir nada de código todavía — ideal para entender el contrato de la API antes de automatizarlo con Postman o desde el frontend.
+
+Cuando confirmes cómo te fue con estos tres pasos — sobre todo si ./gradlew build compiló limpio o tiró algún error — seguimos con el Paso 4: cablear frontend-app/ al backend real, empezando por el login.

@@ -1,0 +1,25 @@
+Tarea Instalar dependencias y arrancar frontend/ en modo desarrollo puro con npm install y npm run dev.
+
+Objetivo Confirmar que la app React (la que diseñaste en Stitch y exportaste a GitHub) compila y corre de forma independiente en tu máquina. Arrancarla desde VS Code y no desde Docker nos regala "Hot-Reloading" (recarga instantánea visual al guardar un archivo), haciendo tu aprendizaje de frontend mucho más rápido.
+
+Descripción paso a paso
+
+En otra terminal nueva (deja la anterior libre), entra a: cd "I:\Mi unidad\DeutchUltra\MIS PROYECTOS\Recuperat-AdminPro\proyecto prueba\frontend"
+>Ejecuta 
+npm install 
+— esto descarga React, Vite y las librerías necesarias.
+>Ejecuta 
+npm run dev.
+La terminal te mostrará una URL local, típicamente http://localhost:5173.
+Ábrela en tu navegador.
+Explicación — qué hace cada pieza y por qué npm install lee la "receta" en package.json y descarga cada paquete a una carpeta oculta node_modules/. npm run dev ejecuta Vite, un servidor moderno de desarrollo que compila tu código TypeScript/JSX al vuelo. Esto no genera archivos finales para producción aún, solo sirve la app en la memoria RAM de tu computadora.
+
+Uniones y links
+
+instala npm install → lee package.json → descarga librerías a node_modules/
+arranca npm run dev → Vite lee vite.config.ts → sirve tu aplicación web en vivo
+sirve interfaz visual desconectada (aún no hace llamadas HTTP a nuestro backend).
+Punto de prueba
+
+Herramienta: Tu navegador web (Chrome / Edge), en http://localhost:5173.
+Por qué esta herramienta: No hay nada de base de datos aquí, la única prueba real es visual. Si ves tus pantallas y puedes hacer clics entre el menú lateral o los botones sin errores, el frontend quedó sano.

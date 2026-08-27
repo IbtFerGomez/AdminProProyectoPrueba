@@ -1,0 +1,265 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [5 0 R 7 0 R 9 0 R] /Count 3 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Length 2007 >>
+stream
+BT
+/F1 10 Tf
+48 790 Td
+14 TL
+/F1 15 Tf
+(ADMINPRO - RESUMEN TECNICO DEL PROYECTO) Tj
+0 -14 Td
+/F1 10 Tf
+(RecuperaT Gestion Clinica | 26 de agosto de 2026) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+/F1 12 Tf
+(1. RESUMEN EJECUTIVO) Tj
+0 -14 Td
+(AdminPro es una plataforma administrativa para una clinica de) Tj
+0 -14 Td
+(rehabilitacion. Centraliza pacientes, tratamientos, agenda, caja,) Tj
+0 -14 Td
+(inventario, autorizaciones y roles de usuario.) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(Estado actual: prototipo de interfaz avanzado, con datos simulados) Tj
+0 -14 Td
+(en memoria y una base backend preparada parcialmente. Todavia no) Tj
+0 -14 Td
+(existen API REST, persistencia de operaciones ni autenticacion real) Tj
+0 -14 Td
+(conectada al frontend.) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+/F1 12 Tf
+(2. ARQUITECTURA GENERAL) Tj
+0 -14 Td
+(- Frontend: React 19, TypeScript, Vite, Tailwind CSS 4, Lucide React.) Tj
+0 -14 Td
+(- Backend: Java 21, Spring Boot, Spring MVC, JPA, Security y Validation.) Tj
+0 -14 Td
+(- Base de datos: PostgreSQL 15 ejecutado mediante Docker Compose.) Tj
+0 -14 Td
+(- Persistencia: entidades JPA definidas, sin repositorios ni servicios.) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(El frontend funciona como una SPA. La navegacion se controla mediante) Tj
+0 -14 Td
+(el estado currentScreen en App.tsx; no se usa React Router. Los datos) Tj
+0 -14 Td
+(iniciales provienen de frontend/src/data/mockData.ts y las operaciones) Tj
+0 -14 Td
+(actualizan arrays locales mediante React state.) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+/F1 12 Tf
+(3. INFRAESTRUCTURA) Tj
+0 -14 Td
+(Docker Compose crea PostgreSQL 15, base adminpro_db, usuario adminpro,) Tj
+0 -14 Td
+(puerto 5432 y volumen persistente pgdata. Solo se levanta la base de) Tj
+0 -14 Td
+(datos; backend y frontend no estan containerizados.) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(El backend usa application.yml para conectar a localhost:5432, con) Tj
+0 -14 Td
+(Hibernate ddl-auto=update y SQL visible en consola. El frontend tiene) Tj
+0 -14 Td
+(scripts dev, build, preview y lint en package.json.) Tj
+0 -14 Td
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 4 0 R >>
+endobj
+6 0 obj
+<< /Length 1889 >>
+stream
+BT
+/F1 10 Tf
+48 790 Td
+14 TL
+/F1 15 Tf
+(4. BACKEND: MODELO DE DATOS) Tj
+0 -14 Td
+/F1 10 Tf
+() Tj
+0 -14 Td
+(Paciente: UUID, folio, nombre, telefono, correo, direccion, contacto) Tj
+0 -14 Td
+(de emergencia, sucursal de origen, fecha y tipo de ingreso, aseguradora.) Tj
+0 -14 Td
+(Relacion ManyToOne con Sucursal.) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(Usuario: UUID, nombre, credencial unica, rol, sucursales asignadas,) Tj
+0 -14 Td
+(estado activo y autenticacion de dos factores. Tiene relacion ManyToOne) Tj
+0 -14 Td
+(con Rol y ManyToMany con Sucursal mediante usuario_sucursal.) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(Rol: UUID y nombre unico. La matriz de permisos esta prevista, pero no) Tj
+0 -14 Td
+(existe todavia como entidad o tabla independiente.) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(Sucursal: UUID, nombre, direccion, telefono y WhatsApp Business.) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(Las entidades estan en backend/src/main/java/com/recuperat/adminpro/model.) Tj
+0 -14 Td
+(La clase de arranque es AdminProApplication.java.) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+/F1 12 Tf
+(5. FRONTEND: VISTAS PRINCIPALES) Tj
+0 -14 Td
+(- Login: formulario, login demo, validacion basica y recuperacion simulada.) Tj
+0 -14 Td
+(- Dashboard: indicadores, autorizaciones recientes y pacientes por renovar.) Tj
+0 -14 Td
+(- Pacientes: busqueda, filtros, detalle, alta, agenda y renovacion.) Tj
+0 -14 Td
+(- Agenda: citas con terapeuta, tratamiento, fecha, hora y estado.) Tj
+0 -14 Td
+(- Finanzas: ingresos, ticket promedio, transacciones y cobro en caja.) Tj
+0 -14 Td
+(- Inventario: articulos, stock, minimo, unidad, categoria y alertas.) Tj
+0 -14 Td
+(- Autorizaciones: descuentos, anulaciones, aprobaciones y rechazos.) Tj
+0 -14 Td
+(- Roles: creacion visual de perfiles y seleccion de permisos.) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(App.tsx coordina sesion, navegacion, busqueda, menu movil, datos,) Tj
+0 -14 Td
+(modales y notificaciones toast.) Tj
+0 -14 Td
+ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 6 0 R >>
+endobj
+8 0 obj
+<< /Length 1840 >>
+stream
+BT
+/F1 10 Tf
+48 790 Td
+14 TL
+/F1 15 Tf
+(6. COMPONENTES Y DATOS) Tj
+0 -14 Td
+/F1 10 Tf
+() Tj
+0 -14 Td
+(Componentes de layout: Sidebar, TopBar y AdminProLogo.) Tj
+0 -14 Td
+(Modales: NewPatientModal, PatientDetailModal, NewAppointmentModal) Tj
+0 -14 Td
+(y CheckoutModal.) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(Los tipos TypeScript estan en frontend/src/types.ts e incluyen User,) Tj
+0 -14 Td
+(Patient, AuthorizationRequest, Role, Appointment, InventoryItem y) Tj
+0 -14 Td
+(Transaction.) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(mockData.ts contiene el usuario Dr. Silva, pacientes, autorizaciones,) Tj
+0 -14 Td
+(roles, citas, inventario y transacciones de demostracion.) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+/F1 12 Tf
+(7. LIMITACIONES ACTUALES) Tj
+0 -14 Td
+(- El login no consulta al backend: acepta campos no vacios.) Tj
+0 -14 Td
+(- Los cambios se guardan solo en memoria y se pierden al recargar.) Tj
+0 -14 Td
+(- No hay control efectivo de permisos por rol en el servidor.) Tj
+0 -14 Td
+(- Los botones de exportacion y recuperacion usan alert o simulaciones.) Tj
+0 -14 Td
+(- Spring Security esta declarado, pero no tiene configuracion visible.) Tj
+0 -14 Td
+(- Solo existe la prueba contextLoads\(\) en el backend.) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+/F1 12 Tf
+(8. OBSERVACION DE ESTRUCTURA) Tj
+0 -14 Td
+(App.tsx importa ./components/... mientras el arbol visible ubica los) Tj
+0 -14 Td
+(componentes en src/assets/components/.... Debe verificarse esta ruta) Tj
+0 -14 Td
+(despues de instalar dependencias y ejecutar el build.) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+/F1 12 Tf
+(9. PROXIMOS PASOS) Tj
+0 -14 Td
+(Instalar dependencias, confirmar build, crear repositorios, servicios,) Tj
+0 -14 Td
+(controladores REST y DTOs; implementar autenticacion y permisos; conectar) Tj
+0 -14 Td
+(el frontend a la API; agregar migraciones, pruebas y Docker para todos) Tj
+0 -14 Td
+(los servicios.) Tj
+0 -14 Td
+ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 8 0 R >>
+endobj
+xref
+0 10
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000127 00000 n 
+0000000197 00000 n 
+0000002256 00000 n 
+0000002382 00000 n 
+0000004323 00000 n 
+0000004449 00000 n 
+0000006341 00000 n 
+trailer
+<< /Size 10 /Root 1 0 R >>
+startxref
+6467
+%%EOF

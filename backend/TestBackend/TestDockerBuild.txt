@@ -1,0 +1,45 @@
+
+#Dentro de vscode
+#Ejemplo
+psql -U admin_prueba -h localhost -d bd_prueba_sistema -W
+-U admin_prueba: Es el usuario.
+-h localhost: Es el host (tu máquina local).
+-d bd_prueba_sistema: Es el nombre de la base de datos.
+-W: Te pedirá la contraseña (que sería ClaveSegura123).
+
+#Comando 
+>psql -U adminpro -h localhost -d adminpro_db -W
+
+adminpro_password
+
+
+# Dentro de docker desde terminal vscode
+1.Verificar que el contenedor está corriendo:Confirmar que docker-compose up funcionó.En tu terminal de VS Code, ejecuta el 
+siguiente comando para ver los contenedores que están activos en este momento:
+
+>Bash 
+docker ps
+
+Busca en la lista generada. Deberías ver uno con la imagen postgres:15 o con el nombre adminpro-db. En la columna STATUS, debe 
+decir algo como Up X seconds/minutes. Si es así, el contenedor está vivo.
+2.Entrar a la base de datos con psql:Vamos a usar psql (la herramienta de línea de comandos oficial de Postgres) ejecutándola 
+directamente dentro de tu contenedor. 
+Escribe este comando y presiona Enter:
+>Bash
+docker exec -it adminpro-db psql -U adminpro -d adminpro_db
+
+(Nota: Si te da un error de que no encuentra el contenedor adminpro-db, es posible que Docker lo haya nombrado diferente 
+basándose en tu carpeta. Si eso pasa, copia el nombre exacto que te dio el comando docker ps en la columna NAMES y reemplaza 
+adminpro-db).
+3.Comprobar que está viva y vacía:Si todo salió bien, el texto de tu terminal cambiará. Ya no estarás en Windows, estarás dentro 
+de Postgres, y la línea comenzará con algo como adminpro_db=#.Para confirmar que la bodega está lista y limpia (como pide tu tarea)
+, usa el comando para listar tablas:
+>SQL
+\dt
+El sistema te responderá: Did not find any relations. (No se encontraron relaciones/tablas). ¡Ese es exactamente el resultado 
+esperado! Significa que estás conectado a una base de datos real, pero está totalmente vacía y lista para tu backend.
+4.Salir de Postgres:Para cerrar la conexión de la base de datos y regresar a tu terminal normal de VS Code, 
+simplemente escribe:
+SQL
+>\q
+Presiona Enter y volverás a tu ruta de Windows (I:\Mi unidad...).
